@@ -11,11 +11,13 @@ import torch.optim as optim
 BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 128         # minibatch size
 #GAMMA = 0.99            # discount factor
-GAMMA = 0.9
-TAU = 1e-3              # for soft update of target parameters
+GAMMA = 0.0
+#TAU = 1e-3              # for soft update of target parameters
+TAU = 1
 #LR = 5e-4               # learning rate
-LR = 0.005
+LR = 0.0005
 UPDATE_EVERY = 4        # how often to update the network
+UPDATE_TARGET_EVERY = 10000
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -45,6 +47,7 @@ class Agent():
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed)
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 10
+        self.l_step = 1
                         #**STEP() SIMPLY RECORDS AND LEARNS
     def save_model(self):
         """Initialize an Agent object.
@@ -62,7 +65,7 @@ class Agent():
                 """
         import random
         file_name = "MODEL_CHECKPOINT."
-        rand_ext = str(random.randint(0, 99999))
+        rand_ext = str(random.randint(0, 9999999))
         file_name = file_name + rand_ext + ".model"
         torch.save(self.qnetwork_local.state_dict(), file_name)
         print("Model Saved: " + file_name)
@@ -130,7 +133,13 @@ class Agent():
         loss.backward()
         self.optimizer.step()
         # ------------------- update target network ------------------- #
-        self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)                     
+        # **by default updates target network every time we learn. but lets
+        # **try to only update target every so often
+        self.l_step = (self.l_step + 1) % UPDATE_TARGET_EVERY
+        #print("learning")
+        if self.l_step == 0:
+            #print("updating target model")
+            self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)
 
     def soft_update(self, local_model, target_model, tau): #***updates target model
         """Soft update model parameters.
