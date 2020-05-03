@@ -66,7 +66,7 @@ class Agent():
         import random
         file_name = "MODEL_CHECKPOINT."
         rand_ext = str(random.randint(0, 9999999))
-        file_name = file_name + rand_ext + ".model"
+        file_name = file_name + rand_ext + ".model" + ".pt"
         torch.save(self.qnetwork_local.state_dict(), file_name)
         print("Model Saved: " + file_name)
 
