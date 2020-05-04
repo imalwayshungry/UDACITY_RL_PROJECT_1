@@ -121,12 +121,24 @@ class Agent():
         "*** YOUR CODE HERE ***"
         self.qnetwork_local.train()
         self.qnetwork_target.eval()
-        predicted_targets = self.qnetwork_local(states).gather(1, actions)
-        with torch.no_grad():
-            #target_net_pred1 = self.qnetwork_target(next_states)
-            target_net_pred = self.qnetwork_target(next_states).max(1)[0].unsqueeze(1) # ***TARGET NETWORK TO GET `MAXQ
 
-        labels = rewards + (gamma * target_net_pred * (1 - dones))
+        DQN = True
+        DDQN = False #**Lets test it real quick!
+
+        if DQN:
+            predicted_targets = self.qnetwork_local(states).gather(1, actions) #**effectively gets MAX q for multiple actions
+            with torch.no_grad():
+                #target_net_pred1 = self.qnetwork_target(next_states)
+                target_net_pred = self.qnetwork_target(next_states).max(1)[0].unsqueeze(1) # ***TARGET NETWORK TO GET `MAXQ
+            labels = rewards + (gamma * target_net_pred * (1 - dones))
+
+        if DDQN:
+            next_actions = self.qnetwork_local(states).argmax(-1, keepdim=True)  # **effectively gets MAX q for multiple actions
+            print(next_actions)
+            with torch.no_grad():
+                target_net_pred = self.qnetwork_target(next_states).gather(-1, next_actions)  # ***TARGET NETWORK TO GET `MAXQ
+            print(target_net_pred)
+            labels = rewards + (gamma * target_net_pred * (1 - dones))
 
         loss = self.criterion(predicted_targets, labels).to(device)
         self.optimizer.zero_grad()

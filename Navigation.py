@@ -99,7 +99,7 @@ from dqn_agent import ReplayBuffer
 from dqn_agent import Agent
 
 
-LOAD_PREV_MODEL = True
+LOAD_PREV_MODEL = False
 SET_EPS = False
 MODEL_FILE_NAME = "MODEL_CHECKPOINT.34994.model"
 
